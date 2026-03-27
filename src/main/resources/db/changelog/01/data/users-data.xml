@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+           http://www.liquibase.org/xml/ns/dbchangelog
+           http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.21.xsd">
+
+    <changeSet id="data-user" author="universall">
+        <loadData
+            file="db/changelog/01/data/csv/users.csv"
+            tableName="users"
+            encoding="UTF-8"/>
+    </changeSet>
+
+    <changeSet id="data-user-roles" author="universall">
+        <loadData
+            file="db/changelog/01/data/csv/user_roles.csv"
+            tableName="user_roles"
+            encoding="UTF-8"/>
+    </changeSet>
+
+    <changeSet id="data-user-authorities" author="universall">
+        <loadData
+            file="db/changelog/01/data/csv/user_authorities.csv"
+            tableName="user_authorities"
+            encoding="UTF-8"/>
+    </changeSet>
+
+</databaseChangeLog>

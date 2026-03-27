@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+
+    <changeSet id="1-profile" author="universall">
+        <createTable tableName="profiles">
+            <column name="user_id"
+                    type="BIGINT">
+                <constraints nullable="false"
+                             primaryKey="true"
+                             primaryKeyName="pk_profiles"/>
+            </column>
+            <column name="first_name"
+                    type="VARCHAR(255)"/>
+            <column name="last_name"
+                    type="VARCHAR(255)"/>
+            <column name="position"
+                    type="VARCHAR(255)"/>
+            <column name="department"
+                    type="VARCHAR(255)"/>
+            <column name="profile_image_url"
+                    type="VARCHAR(255)"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="profiles"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_profiles_user"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>

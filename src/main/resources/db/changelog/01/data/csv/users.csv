@@ -1,0 +1,11 @@
+username,email,password_hash
+admin,admin@example.com,$2a$12$YA1ZVmBdiI4htqvSgaLGHeVWpsEfWgs1s/7fjDjSCzY77cxWFoTnG
+user,user@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user03,user03@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user04,user04@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user05,user05@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user06,user06@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user07,user07@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user08,user08@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user09,user09@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG
+user10,user10@example.com,$2a$12$V9g93nrlx/1yxHrebA0dk.qQVcI6IdLyevhfTfWdFnVD8Cu3sembG

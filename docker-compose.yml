@@ -1,0 +1,13 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: planify-spring
+        ports:
+            - "8855:8855"
+        env_file:
+            - secrets/secrets.env
+        environment:
+            SPRING_PROFILES_ACTIVE: docker
+        restart: unless-stopped
