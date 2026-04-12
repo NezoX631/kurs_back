@@ -10,6 +10,8 @@ interface MeetingInvitesUseCaseGroup {
 
     fun getMeetingInvites(meetingId: Long, requesterId: Long): List<MeetingInvite>
 
+    fun getSentInvitesBySender(senderId: Long): List<MeetingInvite>
+
     fun acceptInvite(inviteUuid: String, requesterId: Long)
 
     fun rejectInvite(inviteUuid: String, requesterId: Long)

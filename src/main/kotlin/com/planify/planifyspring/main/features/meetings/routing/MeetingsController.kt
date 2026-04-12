@@ -40,12 +40,15 @@ class MeetingsController(
         @AuthenticationPrincipal authContext: AuthContext,
         @RequestBody body: CreateMeetingRequestDTO
     ): ResponseEntity<ApplicationResponse<CreateMeetingResponseDTO>> {
+        // startsAt уже в Instant (UTC) с фронтенда
+        val startsAtInstant = body.startsAt
+
         val meeting = meetingsServiceUseCaseGroup.createMeeting(
             creatorId = authContext.user.id,
             name = body.name,
             description = body.description,
             location = body.location,
-            startsAt = body.startsAt,
+            startsAt = startsAtInstant,
             duration = body.duration
         )
 
@@ -84,13 +87,17 @@ class MeetingsController(
             requesterId = authContext.user.id
         )
 
+        if (meetingWithParticipantIds == null) {
+            throw NotFoundHttpException("Meeting was not found or you don't have access to it")
+        }
+
         val invites = meetingInvitesUseCaseGroup.getMeetingInvites(
             meetingId = meetingWithParticipantIds.meeting.id,
             requesterId = authContext.user.id
         ).map { MeetingInviteDTO.fromEntity(it) }
 
         val participantProfiles = meetingWithParticipantIds.participantIds.map {
-            ProfileDTO.fromEntity(profileUseCaseGroup.getProfileById(it))  // TODO: Optimise it via db query
+            ProfileDTO.fromEntity(profileUseCaseGroup.getProfileById(it))
         }
 
         val invitedUserProfiles = invites.map {
@@ -210,5 +217,15 @@ class MeetingsController(
                 meetings = meetings
             ).asSuccessApplicationResponse()
         )
+    }
+
+    @GetMapping("/schedule")
+    fun getUserSchedule(
+        @RequestParam date: LocalDate,
+        @AuthenticationPrincipal authContext: AuthContext
+    ): ApplicationResponse<Map<Int, Boolean>> {
+        // Временная заглушка: все часы с 8 до 22 свободны
+        val schedule = (8..22).associateWith { true }
+        return ApplicationResponse.success(schedule)
     }
 }

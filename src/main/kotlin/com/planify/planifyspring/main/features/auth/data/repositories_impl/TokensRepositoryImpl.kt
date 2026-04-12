@@ -75,7 +75,7 @@ class TokensRepositoryImpl : TokensRepository {
     }
 
     override fun createAccessToken(payload: AuthTokenPayload): String {
-        return createRefreshToken(payload)
+        return createJwtToken(payload)
     }
 
     override fun createRefreshTokenPayload(

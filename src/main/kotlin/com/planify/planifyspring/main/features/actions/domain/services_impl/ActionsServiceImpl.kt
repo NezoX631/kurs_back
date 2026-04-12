@@ -31,6 +31,10 @@ class ActionsServiceImpl(
         val scope = getUserActionsScope(userId)
         deleteAction(scope, actionId)
     }
+    
+    override fun deleteUserActionByInviteUuid(userId: Long, inviteUuid: String, type: String): Boolean {
+        return actionsRepository.deleteUserActionByInviteUuid(userId, inviteUuid, type)
+    }
 
     override fun getIncomingActions(scope: String, lastSeen: String, count: Long, timeout: Long): List<Action> {
         return actionsRepository.getIncomingActions(scope, lastSeen, count, timeout)

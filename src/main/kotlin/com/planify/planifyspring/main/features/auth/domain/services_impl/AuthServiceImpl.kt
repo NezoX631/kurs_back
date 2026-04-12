@@ -30,9 +30,6 @@ class AuthServiceImpl(
     }
 
     private fun saveSession(session: AuthSession) {
-        val cache = cacheManager.getCache("sessions")
-        cache?.evict("${session.userId}-${session.uuid}")
-
         sessionsRepository.updateSession(session)
     }
 
@@ -55,10 +52,7 @@ class AuthServiceImpl(
             accessTokenUuid = accessTokenUuid,
             refreshTokenUuid = refreshTokenUuid,
             clientName = clientName
-        ).also {
-            val cache = JsonCacheWrapper(cacheManager.getCache("sessions")!!, objectMapper)
-            cache.put("${it.userId}-${it.uuid}", it)
-        }
+        )
     }
 
     override fun startSession(
@@ -95,16 +89,11 @@ class AuthServiceImpl(
     }
 
     override fun getSession(userId: Long, sessionUuid: String): AuthSession {
-        val cache = JsonCacheWrapper(cacheManager.getCache("sessions")!!, objectMapper)
-        val cached = cache.getAs<AuthSession>("$userId-$sessionUuid")
-        if (cached != null) return cached
-
+        // Direct repository call - sessions are stored in-memory by SessionsRepositoryImpl
         val session = sessionsRepository.getSession(
             userId = userId,
             sessionUuid = sessionUuid
         ) ?: throw NotFoundAppError("Session not found")
-
-        cache.put("$userId-$sessionUuid", session)
         return session
     }
 
@@ -138,9 +127,6 @@ class AuthServiceImpl(
     }
 
     override fun revokeSession(userId: Long, sessionUuid: String) {
-        val cache = cacheManager.getCache("sessions")!!
-        cache.evict("$userId-$sessionUuid")
-
         return sessionsRepository.revokeSession(userId = userId, sessionUuid = sessionUuid, soft = true)
     }
 
@@ -174,10 +160,6 @@ class AuthServiceImpl(
     }
 
     override fun getUserByIdWithAccessInfo(id: Long): Pair<User, AccessInfo> {
-        val cache = JsonCacheWrapper(cacheManager.getCache("usersWithAccess")!!, objectMapper)
-        val cached = cache.getAs<Pair<User, AccessInfo>>(id.toString())
-        if (cached != null) return cached
-
         val result = usersRepository.getByIdWithAccessInfo(id)
         return result ?: throw NotFoundAppError("User was not found")
     }

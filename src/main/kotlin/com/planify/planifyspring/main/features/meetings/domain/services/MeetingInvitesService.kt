@@ -10,6 +10,8 @@ interface MeetingInvitesService {
 
     fun getMeetingInvites(meetingId: Long): List<MeetingInvite>
 
+    fun getSentInvitesBySender(senderId: Long): List<MeetingInvite>
+
     fun acceptInvite(invite: MeetingInvite)
     fun acceptInvite(inviteUuid: String)
 

@@ -2,6 +2,7 @@ package com.planify.planifyspring.main.features.auth.data.repositories_impl
 
 import com.planify.planifyspring.core.exceptions.AlreadyExistsAppError
 import com.planify.planifyspring.main.common.utils.SecurityHelper
+import com.planify.planifyspring.main.features.auth.data.jpa.RoleJpaRepository
 import com.planify.planifyspring.main.features.auth.data.jpa.UserJpaRepository
 import com.planify.planifyspring.main.features.auth.data.models.UserModel
 import com.planify.planifyspring.main.features.auth.domain.entities.AccessInfo
@@ -14,8 +15,14 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class UsersRepositoryImpl(
-    private val userJpaRepository: UserJpaRepository
+    private val userJpaRepository: UserJpaRepository,
+    private val roleJpaRepository: RoleJpaRepository
 ) : UsersRepository {
+
+    companion object {
+        private const val DEFAULT_ROLE_NAME = "ROLE_USER"
+    }
+
     override fun create(username: String, email: String, passwordHash: String): User {
         val model = UserModel(
             username = username,
@@ -23,9 +30,14 @@ class UsersRepositoryImpl(
             passwordHash = passwordHash
         )
 
-        if (userJpaRepository.existsByEmailAndUsername(email, username)) {  // TODO: Make faster check
+        if (userJpaRepository.existsByEmailAndUsername(email, username)) {
             throw AlreadyExistsAppError("User with this email or username already exists")
         }
+
+        // Автоматически назначаем роль ROLE_USER новому пользователю
+        val roleModel = roleJpaRepository.findByName(DEFAULT_ROLE_NAME)
+            ?: throw IllegalStateException("Default role '$DEFAULT_ROLE_NAME' not found in database. Run DataInitializer.")
+        model.roles.add(roleModel)
 
         userJpaRepository.save(model)
 

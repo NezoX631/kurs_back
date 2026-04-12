@@ -112,4 +112,17 @@ class MeetingInvitesController(
 
         return ResponseEntity.ok(ApplicationResponse.success())
     }
+
+    @GetMapping("/my/sent")
+    fun getSentInvites(
+        @AuthenticationPrincipal authContext: AuthContext,
+    ): ResponseEntity<ApplicationResponse<List<MeetingInviteDTO>>> {
+        val invites = meetingInviteUseCaseGroup.getSentInvitesBySender(authContext.user.id)
+
+        return ResponseEntity.ok(
+            ApplicationResponse.success(
+                invites.map { MeetingInviteDTO.fromEntity(it) }
+            )
+        )
+    }
 }

@@ -6,12 +6,16 @@ import com.planify.planifyspring.main.features.meetings.domain.repositories.Meet
 import com.planify.planifyspring.main.features.meetings.domain.schemas.MeetingInviteParchSchema
 import org.springframework.stereotype.Repository
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 import java.util.*
 
 @Repository
 class MeetingInvitesRepositoryImpl(
     // private val redisHelper: RedisHelper
 ) : MeetingInvitesRepository {
+
+    // In-memory invites storage (since Redis is disabled)
+    private val invites = ConcurrentHashMap<String, MeetingInvite>()
 
     override fun createInvite(
         meetingId: Long,
@@ -20,7 +24,7 @@ class MeetingInvitesRepositoryImpl(
         expiresAt: Instant
     ): MeetingInvite {
         val now = Instant.now()
-        return MeetingInvite(
+        val invite = MeetingInvite(
             uuid = UUID.randomUUID().toString(),
             meetingId = meetingId,
             senderId = senderId,
@@ -31,19 +35,30 @@ class MeetingInvitesRepositoryImpl(
             expiresAt = expiresAt,
             statusData = null
         )
+        invites[invite.uuid] = invite
+        return invite
     }
 
     override fun getInvite(uuid: String): MeetingInvite? {
-        println("getInvite called for uuid: $uuid (returning null - Redis disabled)")
-        return null
+        return invites[uuid]
     }
 
     override fun updateInvite(inviteUuid: String, patch: MeetingInviteParchSchema) {
-        println("updateInvite called for uuid: $inviteUuid with patch: $patch (ignored - Redis disabled)")
+        invites[inviteUuid]?.let { current ->
+            val updated = current.copy(
+                status = patch.status ?: current.status,
+                statusData = patch.statusData ?: current.statusData,
+                updatedAt = Instant.now()
+            )
+            invites[inviteUuid] = updated
+        }
     }
 
     override fun getMeetingInvites(meetingId: Long): List<MeetingInvite> {
-        println("getMeetingInvites called for meetingId: $meetingId (returning empty list - Redis disabled)")
-        return emptyList()
+        return invites.values.filter { it.meetingId == meetingId }
+    }
+
+    override fun getSentInvitesBySender(senderId: Long): List<MeetingInvite> {
+        return invites.values.filter { it.senderId == senderId }.sortedByDescending { it.createdAt }
     }
 }

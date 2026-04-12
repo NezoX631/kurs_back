@@ -15,22 +15,12 @@ import tools.jackson.databind.ObjectMapper
 @Service
 class ProfilesServiceImpl(
     private val profilesRepository: ProfilesRepository,
-    private val cacheManager: CacheManager,
-    private val objectMapper: ObjectMapper
 ) : ProfilesService {
     override fun getProfileById(userId: Long): Profile? {
-        val cache = JsonCacheWrapper(cacheManager.getCache("profiles:$userId")!!, objectMapper)
-        val cached = cache.getAs<Profile>("profiles:$userId")
-        if (cached != null) return cached
-
         return profilesRepository.getProfileById(userId)
-            .also { profile -> profile?.let { cache.put("profiles:$userId", profile) } }
     }
 
     override fun patchProfile(userId: Long, patch: PatchProfileSchema) {
-        val cache = cacheManager.getCache("profiles:${userId}")!!
-        cache.evict("profiles:${userId}")
-
         return profilesRepository.patchProfile(userId, patch)
     }
 

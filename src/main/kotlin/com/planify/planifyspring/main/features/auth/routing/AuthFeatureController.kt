@@ -54,6 +54,8 @@ class AuthFeatureController(
         @RequestBody request: LoginRequestDTO,
         @RequestHeader("User-Agent") userAgent: String
     ): ApplicationResponse<AuthContextDTO> {
+        println("🔵 LOGIN REQUEST: email=${request.email}, clientName=${request.clientName}")
+        
         val result = authUseCaseGroup.login(
             email = request.email,
             passwordRaw = request.password,
@@ -61,12 +63,17 @@ class AuthFeatureController(
             clientName = request.clientName,
             sessionName = null
         )
+        
         val dto = AuthContextDTO(
             user = UserPrivateDTO.fromDomain(result.first.user),
             session = AuthSessionPrivateDTO.fromDomain(result.first.session),
             tokens = TokensDTO.fromDomain(result.second),
             accessInfo = AccessInfoDTO.fromDomain(result.first.accessInfo)
         )
+        
+        println("🟢 LOGIN RESPONSE: accessToken=${result.second.accessToken.take(20)}..., refreshToken=${result.second.refreshToken.take(20)}...")
+        println("🟢 LOGIN RESPONSE DTO: accessToken=${dto.tokens.accessToken.take(20)}...")
+        
         return ApplicationResponse.success(dto)
     }
 

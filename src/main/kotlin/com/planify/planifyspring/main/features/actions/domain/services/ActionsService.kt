@@ -10,6 +10,8 @@ interface ActionsService {
 
     fun deleteAction(scope: String, actionId: String)
     fun deleteUserAction(userId: Long, actionId: String)
+    
+    fun deleteUserActionByInviteUuid(userId: Long, inviteUuid: String, type: String): Boolean
 
     fun getIncomingActions(scope: String, lastSeen: String, count: Long, timeout: Long): List<Action>
     fun getUserIncomingActionsUsingRecordId(userId: Long, lastSeen: String, count: Long, timeout: Long): List<Action>

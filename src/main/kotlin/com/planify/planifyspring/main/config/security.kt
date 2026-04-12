@@ -28,7 +28,10 @@ class ApplicationSecurityConfig(
             .csrf { csrf ->
                 csrf.ignoringRequestMatchers(
                     "/h2-console/**",
-                    "/auth/**"
+                    "/auth/**",
+                    "/meetings/**",
+                    "/profiles/**",
+                    "/chat/**"
                 )
             }
             .headers { headers ->
@@ -36,37 +39,32 @@ class ApplicationSecurityConfig(
                     frameOptions.disable()
                 }
             }
-            .exceptionHandling {
-                it.authenticationEntryPoint(authenticationEntryPoint)
-                it.accessDeniedHandler(accessDeniedHandler)
-            }
             .authorizeHttpRequests { auth ->
-                // Публичные эндпоинты auth
                 auth.requestMatchers(
                     "/auth/login",
                     "/auth/register",
                     "/auth/refresh"
                 ).permitAll()
 
-                // H2 Console
                 auth.requestMatchers(
                     "/h2-console/**",
                     "/h2-console"
                 ).permitAll()
 
-                // Swagger
                 auth.requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
 
-                // Все остальные запросы требуют аутентификации
                 auth.anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterBefore(ApplicationHttpExceptionHandlerFilter(), DisableEncodeUrlFilter::class.java)
+            .addFilterAfter(ApplicationHttpExceptionHandlerFilter(), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(TrailingSlashHandlerFilter(), ApplicationHttpExceptionHandlerFilter::class.java)
+            .exceptionHandling {
+                it.disable()
+            }
 
         return http.build()
     }

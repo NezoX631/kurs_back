@@ -39,7 +39,7 @@ class ProfilesRepositoryImpl(
         input: String,
         pageable: Pageable
     ): Page<Profile> {
-        return profilesJpaRepository.findAll(ProfileSearchSpecification.searchProfile(input), pageable)
+        return profilesJpaRepository.searchProfiles(input.trim(), pageable)
             .map { it.toEntity() }
     }
 

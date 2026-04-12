@@ -6,6 +6,8 @@ interface ActionsRepository {
     fun createAction(scope: String, type: String, data: Any): Action
 
     fun deleteAction(scope: String, actionId: String)
+    
+    fun deleteUserActionByInviteUuid(userId: Long, inviteUuid: String, type: String): Boolean
 
     fun getIncomingActions(scope: String, lastSeen: String, count: Long, timeout: Long): List<Action>
 }

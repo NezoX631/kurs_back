@@ -59,6 +59,10 @@ class MeetingInvitesServiceImpl(
         return meetingInvitesRepository.getMeetingInvites(meetingId)
     }
 
+    override fun getSentInvitesBySender(senderId: Long): List<MeetingInvite> {
+        return meetingInvitesRepository.getSentInvitesBySender(senderId)
+    }
+
     override fun acceptInvite(invite: MeetingInvite) {
         meetingInvitesRepository.updateInvite(
             inviteUuid = invite.uuid,
@@ -68,6 +72,13 @@ class MeetingInvitesServiceImpl(
         )
 
         meetingService.createMeetingParticipant(invite.meetingId, invite.targetId)
+        
+        // Удаляем action типа 'meetings:invited' для target пользователя
+        actionsService.deleteUserActionByInviteUuid(
+            userId = invite.targetId,
+            inviteUuid = invite.uuid,
+            type = "meetings:invited"
+        )
 
         actionsService.createUserAction(
             userId = invite.senderId,
@@ -119,6 +130,13 @@ class MeetingInvitesServiceImpl(
                 status = MeetingInviteStatus.REJECTED
             )
         )
+        
+        // Удаляем action типа 'meetings:invited' для target пользователя
+        actionsService.deleteUserActionByInviteUuid(
+            userId = invite.targetId,
+            inviteUuid = invite.uuid,
+            type = "meetings:invited"
+        )
 
         actionsService.createUserAction(
             userId = invite.senderId,
@@ -150,7 +168,7 @@ class MeetingInvitesServiceImpl(
     }
 
     override fun rejectInvite(inviteUuid: String) {
-        acceptInvite(getInvite(inviteUuid))
+        rejectInvite(getInvite(inviteUuid))
     }
 
     override fun requestRescheduleInvite(invite: MeetingInvite, rescheduleTo: Instant) {

@@ -9,7 +9,9 @@ import java.util.*
 import javax.crypto.SecretKey
 
 object SecurityHelper {
-    val secretString = System.getenv("JWT_SECRET")!!
+    // Fallback ключ для разработки. В продакшене используйте JWT_SECRET из env!
+    private const val DEFAULT_SECRET = "bXlzdXBlcnNlY3JldGtleWZvcnRva2Vuc2lnbmluZzE="
+    val secretString: String = System.getenv("JWT_SECRET") ?: DEFAULT_SECRET
     val secretKey: SecretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretString))
     val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder(12)
 

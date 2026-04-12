@@ -159,4 +159,8 @@ class MeetingInvitesUseCaseGroupImpl(
         val invite = getInvite(inviteUuid, requesterId)  // Also checks if invite exists and user can access its info
         return responseRescheduleInvite(invite, shouldReschedule, requesterId)
     }
+
+    override fun getSentInvitesBySender(senderId: Long): List<MeetingInvite> {
+        return meetingInvitesService.getSentInvitesBySender(senderId)
+    }
 }

@@ -12,4 +12,6 @@ interface MeetingInvitesRepository {
     fun updateInvite(inviteUuid: String, patch: MeetingInviteParchSchema)
 
     fun getMeetingInvites(meetingId: Long): List<MeetingInvite>
+
+    fun getSentInvitesBySender(senderId: Long): List<MeetingInvite>
 }

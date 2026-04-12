@@ -4,12 +4,16 @@ import com.planify.planifyspring.main.features.auth.domain.entities.AuthSession
 import com.planify.planifyspring.main.features.auth.domain.repositories.SessionsRepository
 import org.springframework.stereotype.Repository
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 import java.util.*
 
 @Repository
 class SessionsRepositoryImpl(
     // private val redisHelper: RedisHelper
 ) : SessionsRepository {
+
+    // In-memory session storage (since Redis is disabled)
+    private val sessions = ConcurrentHashMap<String, AuthSession>()
 
     override fun createSession(
         userId: Long,
@@ -19,7 +23,7 @@ class SessionsRepositoryImpl(
         accessTokenUuid: String,
         refreshTokenUuid: String
     ): AuthSession {
-        return AuthSession(
+        val session = AuthSession(
             uuid = UUID.randomUUID().toString(),
             userId = userId,
             userAgent = userAgent,
@@ -32,32 +36,45 @@ class SessionsRepositoryImpl(
             expiresAt = Instant.now().plusSeconds(24 * 60 * 60),
             isActive = true
         )
+        sessions[session.uuid] = session
+        return session
     }
 
     override fun getSession(userId: Long, sessionUuid: String): AuthSession? {
-        println("getSession called for userId: $userId, sessionUuid: $sessionUuid (returning null - Redis disabled)")
-        return null
+        return sessions[sessionUuid]
     }
 
     override fun getUserSessions(userId: Long): List<AuthSession> {
-        println("getUserSessions called for userId: $userId (returning empty list - Redis disabled)")
-        return emptyList()
+        return sessions.values.filter { it.userId == userId }
     }
 
     override fun getActiveUserSessions(userId: Long): List<AuthSession> {
-        println("getActiveUserSessions called for userId: $userId (returning empty list - Redis disabled)")
-        return emptyList()
+        return sessions.values.filter { it.userId == userId && it.isActive }
     }
 
     override fun revokeSession(userId: Long, sessionUuid: String, soft: Boolean) {
-        println("revokeSession called for userId: $userId, sessionUuid: $sessionUuid, soft: $soft (ignored - Redis disabled)")
+        if (soft) {
+            sessions[sessionUuid]?.let {
+                sessions[sessionUuid] = it.copy(isActive = false, updatedAt = Instant.now())
+            }
+        } else {
+            sessions.remove(sessionUuid)
+        }
     }
 
     override fun <T : Any> updateSession(userId: Long, sessionUuid: String, set: Pair<String, T>) {
-        println("updateSession called for userId: $userId, sessionUuid: $sessionUuid, set: $set (ignored - Redis disabled)")
+        sessions[sessionUuid]?.let { current ->
+            val updated = when (set.first) {
+                "accessTokenUuid" -> current.copy(accessTokenUuid = set.second as String, updatedAt = Instant.now())
+                "refreshTokenUuid" -> current.copy(refreshTokenUuid = set.second as String, updatedAt = Instant.now())
+                "isActive" -> current.copy(isActive = set.second as Boolean, updatedAt = Instant.now())
+                else -> current
+            }
+            sessions[sessionUuid] = updated
+        }
     }
 
     override fun updateSession(updatedSession: AuthSession) {
-        println("updateSession called for updatedSession: ${updatedSession.uuid} (ignored - Redis disabled)")
+        sessions[updatedSession.uuid] = updatedSession
     }
 }
