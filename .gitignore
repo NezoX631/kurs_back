@@ -42,3 +42,4 @@ out/
 secrets/
 src/main/resources/*.json
 src/main/resources/planify-*.json
+src/main/resources/*.json
