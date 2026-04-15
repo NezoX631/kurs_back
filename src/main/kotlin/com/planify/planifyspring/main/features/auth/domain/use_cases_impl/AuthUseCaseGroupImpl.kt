@@ -238,4 +238,19 @@ class AuthUseCaseGroupImpl(
     override fun getActiveUserSessions(userId: Long): List<AuthSession> {
         return authService.getActiveUserSessions(userId)
     }
+
+    override fun saveFcmToken(userId: Long, fcmToken: String) {
+        authService.saveFcmToken(userId, fcmToken)
+    }
+
+    override fun getFcmToken(userId: Long): String? {
+        return authService.getFcmToken(userId)
+    }
+
+    override fun sendPushNotification(userId: Long, title: String, body: String, type: String, data: Map<String, String>) {
+        val fcmToken = getFcmToken(userId)
+        if (fcmToken != null) {
+            authService.sendPushNotification(fcmToken, title, body, type, data)
+        }
+    }
 }

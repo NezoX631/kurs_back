@@ -163,4 +163,12 @@ class MeetingInvitesUseCaseGroupImpl(
     override fun getSentInvitesBySender(senderId: Long): List<MeetingInvite> {
         return meetingInvitesService.getSentInvitesBySender(senderId)
     }
+
+    override fun getMeetingById(meetingId: Long): Meeting? {
+        return try {
+            meetingsService.getMeetingById(meetingId)
+        } catch (_: NotFoundAppError) {
+            null
+        }
+    }
 }

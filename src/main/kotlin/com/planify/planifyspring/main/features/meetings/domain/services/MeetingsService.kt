@@ -37,6 +37,12 @@ interface MeetingsService {
         endAt: Instant
     ): Map<Instant, Long>
 
+    fun getUserCreatedMeetingsWithParticipantIds(
+        userId: Long,
+        startAt: Instant,
+        endAt: Instant
+    ): Map<Instant, List<MeetingWithParticipantIds>>
+
     fun createMeetingParticipant(
         meetingId: Long,
         userId: Long
@@ -61,4 +67,8 @@ interface MeetingsService {
         startAt: Instant,
         endAt: Instant
     ): Boolean
+
+    fun deleteMeeting(
+        meetingId: Long
+    )
 }

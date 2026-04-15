@@ -87,6 +87,26 @@ class MeetingsRepositoryImpl(
         return records.associate { it.date.atStartOfDayInstant() to it.count }
     }
 
+    override fun getUserCreatedMeetingsWithParticipantIds(
+        userId: Long,
+        startAt: Instant,
+        endAt: Instant
+    ): Map<Instant, List<MeetingWithParticipantIds>> {
+        val meetings = meetingsJpaRepository.findByOwnerIdAndStartsAtBetween(userId, startAt, endAt)
+            .filter { it.id != null }
+            .groupBy { it.startsAt.atStartOfDay() }
+            .mapValues { (_, value) ->
+                value.map { meeting ->
+                    val participantIds = meetingParticipantJpaRepository.findByMeetingId(meeting.id!!).map { it.userId }
+                    MeetingWithParticipantIds(
+                        meeting = meeting.toEntity(),
+                        participantIds = participantIds
+                    )
+                }
+            }
+        return meetings
+    }
+
     override fun createMeetingParticipant(meetingId: Long, userId: Long): MeetingParticipant {
         val meetingRef = entityManager.getReference(MeetingModel::class.java, meetingId)
 
@@ -116,5 +136,11 @@ class MeetingsRepositoryImpl(
 
     override fun userHasMeetingsBetween(userId: Long, startAt: Instant, endAt: Instant): Boolean {
         return meetingParticipantJpaRepository.userHasMeetingsBetween(userId, startAt, endAt)
+    }
+
+    override fun deleteMeeting(meetingId: Long) {
+        // Сначала удаляем участников, потом саму встречу
+        meetingParticipantJpaRepository.deleteByMeetingId(meetingId)
+        meetingsJpaRepository.deleteById(meetingId)
     }
 }

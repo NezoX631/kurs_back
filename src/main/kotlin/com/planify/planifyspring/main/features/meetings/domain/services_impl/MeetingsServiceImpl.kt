@@ -61,6 +61,10 @@ class MeetingsServiceImpl(
         return meetingsRepository.getUserDailyMeetingsShort(userId, startAt, endAt)
     }
 
+    override fun getUserCreatedMeetingsWithParticipantIds(userId: Long, startAt: Instant, endAt: Instant): Map<Instant, List<MeetingWithParticipantIds>> {
+        return meetingsRepository.getUserCreatedMeetingsWithParticipantIds(userId, startAt, endAt)
+    }
+
     override fun createMeetingParticipant(meetingId: Long, userId: Long): MeetingParticipant {
         return meetingsRepository.createMeetingParticipant(
             meetingId = meetingId,
@@ -88,5 +92,10 @@ class MeetingsServiceImpl(
 
     override fun userHasMeetingsBetween(userId: Long, startAt: Instant, endAt: Instant): Boolean {
         return meetingsRepository.userHasMeetingsBetween(userId, startAt, endAt)
+    }
+
+    @Transactional
+    override fun deleteMeeting(meetingId: Long) {
+        meetingsRepository.deleteMeeting(meetingId)
     }
 }

@@ -74,4 +74,8 @@ interface MeetingParticipantJpaRepository : JpaRepository<MeetingParticipantMode
         """, nativeQuery = true
     )
     fun userHasMeetingsBetween(userId: Long, startAt: Instant, endAt: Instant): Boolean
+
+    fun deleteByMeetingId(meetingId: Long)
+
+    fun findByMeetingId(meetingId: Long): List<MeetingParticipantModel>
 }

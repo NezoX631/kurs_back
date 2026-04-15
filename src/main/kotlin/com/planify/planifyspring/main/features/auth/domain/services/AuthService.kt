@@ -32,4 +32,8 @@ interface AuthService {
 
     fun getUserByCredentials(email: String, passwordRaw: String): User
     fun getUserByCredentialsWithAccessInfo(email: String, passwordRaw: String): Pair<User, AccessInfo>
+
+    fun saveFcmToken(userId: Long, fcmToken: String)
+    fun getFcmToken(userId: Long): String?
+    fun sendPushNotification(fcmToken: String, title: String, body: String, type: String, data: Map<String, String>)
 }

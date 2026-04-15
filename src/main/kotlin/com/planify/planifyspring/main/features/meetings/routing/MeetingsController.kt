@@ -22,6 +22,7 @@ import com.planify.planifyspring.main.features.meetings.routing.dto.patch_meetin
 import com.planify.planifyspring.main.features.meetings.routing.get_meeting_with_context.GetMeetingWithContextResponseDTO
 import com.planify.planifyspring.main.features.profiles.domain.use_cases.ProfilesUseCaseGroup
 import com.planify.planifyspring.main.features.profiles.routing.dto.ProfileDTO
+import com.planify.planifyspring.main.features.sync.WebSocketSyncService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -33,7 +34,8 @@ import java.time.LocalDate
 class MeetingsController(
     val meetingsServiceUseCaseGroup: MeetingsServiceUseCaseGroup,
     val meetingInvitesUseCaseGroup: MeetingInvitesUseCaseGroup,
-    val profileUseCaseGroup: ProfilesUseCaseGroup
+    val profileUseCaseGroup: ProfilesUseCaseGroup,
+    val webSocketSyncService: WebSocketSyncService
 ) {
     @PostMapping("")
     fun createMeeting(
@@ -50,6 +52,14 @@ class MeetingsController(
             location = body.location,
             startsAt = startsAtInstant,
             duration = body.duration
+        )
+
+        // WebSocket синхронизация: уведомляем создателя
+        webSocketSyncService.notifyMeetingCreated(
+            meetingId = meeting.id,
+            ownerId = authContext.user.id,
+            participantIds = listOf(),
+            meetingName = meeting.name
         )
 
         return ResponseEntity.ok(
@@ -217,6 +227,75 @@ class MeetingsController(
                 meetings = meetings
             ).asSuccessApplicationResponse()
         )
+    }
+
+    @GetMapping("/my/created")
+    fun getMyCreatedMeetings(
+        @AuthenticationPrincipal authContext: AuthContext,
+        @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") dateStart: LocalDate,
+        @RequestParam @DateTimeFormat(pattern = "dd-MM-yyyy") dateEnd: LocalDate
+    ): ResponseEntity<ApplicationResponse<GetMyMeetingsResponseDTO>> {
+        val meetings = meetingsServiceUseCaseGroup.getUserCreatedMeetingsWithParticipantIds(
+            userId = authContext.user.id,
+            startAt = dateStart.atStartOfDayInstant(),
+            endAt = dateEnd.atEndOfDayInstant()
+        )
+
+        return ResponseEntity.ok(
+            GetMyMeetingsResponseDTO(
+                meetings = meetings.mapValues { (_, meetings) ->
+                    meetings.map { (meeting, participantIds) ->
+                        val invites = meetingInvitesUseCaseGroup.getMeetingInvites(
+                            meetingId = meeting.id,
+                            requesterId = authContext.user.id
+                        ).map { MeetingInviteDTO.fromEntity(it) }
+
+                        val participantProfiles = participantIds.map {
+                            ProfileDTO.fromEntity(profileUseCaseGroup.getProfileById(it))
+                        }
+
+                        val invitedUserProfiles = invites.map {
+                            ProfileDTO.fromEntity(profileUseCaseGroup.getProfileById(it.targetId))
+                        }
+
+                        val meeting = MeetingDTO.fromEntity(meeting)
+                        MeetingContextDTO(
+                            participantProfiles = participantProfiles,
+                            invites = invites,
+                            meeting = meeting,
+                            invitedUserProfiles = invitedUserProfiles
+                        )
+                    }
+                }
+            ).asSuccessApplicationResponse()
+        )
+    }
+
+    @DeleteMapping("/{meetingId}")
+    fun deleteMeeting(
+        @AuthenticationPrincipal authContext: AuthContext,
+        @PathVariable meetingId: Long,
+    ): ResponseEntity<ApplicationResponse<Nothing>> {
+        // Сначала получаем участников для уведомления
+        val meetingWithParticipants = meetingsServiceUseCaseGroup.getMeetingWithParticipantIds(
+            meetingId = meetingId,
+            requesterId = authContext.user.id
+        )
+
+        meetingsServiceUseCaseGroup.deleteMeeting(
+            requesterId = authContext.user.id,
+            meetingId = meetingId
+        )
+
+        // WebSocket синхронизация: уведомляем всех участников
+        if (meetingWithParticipants != null) {
+            webSocketSyncService.notifyMeetingDeleted(
+                meetingId = meetingId,
+                participantIds = meetingWithParticipants.participantIds + authContext.user.id
+            )
+        }
+
+        return ResponseEntity.ok(ApplicationResponse.success())
     }
 
     @GetMapping("/schedule")

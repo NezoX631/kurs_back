@@ -1,5 +1,8 @@
 package com.planify.planifyspring.main.features.auth.domain.services_impl
 
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.Message
+import com.google.firebase.messaging.Notification
 import com.planify.planifyspring.core.exceptions.NotFoundAppError
 import com.planify.planifyspring.main.common.utils.JsonCacheWrapper
 import com.planify.planifyspring.main.common.utils.SecurityHelper
@@ -10,6 +13,7 @@ import com.planify.planifyspring.main.features.auth.domain.repositories.UsersRep
 import com.planify.planifyspring.main.features.auth.domain.services.AuthService
 import com.planify.planifyspring.main.features.profiles.domain.schemas.CreateProfileSchema
 import com.planify.planifyspring.main.features.profiles.domain.services.ProfilesService
+import org.slf4j.LoggerFactory
 import org.springframework.cache.CacheManager
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -25,6 +29,12 @@ class AuthServiceImpl(
     private val objectMapper: ObjectMapper,
     private val profilesService: ProfilesService
 ) : AuthService {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
+    // Хранилище FCM токенов в памяти (в продакшене использовать БД)
+    private val fcmTokens = mutableMapOf<Long, String>()
+
     private fun generateTokenUuid(): String {
         return tokensRepository.generateTokenUuid()
     }
@@ -178,5 +188,35 @@ class AuthServiceImpl(
 
     override fun getUserByCredentialsWithAccessInfo(email: String, passwordRaw: String): Pair<User, AccessInfo> {
         return usersRepository.getByAuthCredentialsWithAccessInfo(email, passwordRaw) ?: throw NotFoundAppError("User was not found")
+    }
+
+    override fun saveFcmToken(userId: Long, fcmToken: String) {
+        fcmTokens[userId] = fcmToken
+        logger.info("FCM token saved for user $userId")
+    }
+
+    override fun getFcmToken(userId: Long): String? {
+        return fcmTokens[userId]
+    }
+
+    override fun sendPushNotification(fcmToken: String, title: String, body: String, type: String, data: Map<String, String>) {
+        try {
+            val message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(
+                    Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build()
+                )
+                .putData("type", type)
+                .apply { data.forEach { (key, value) -> putData(key, value) } }
+                .build()
+
+            val response = FirebaseMessaging.getInstance().send(message)
+            logger.info("Push notification sent: $response")
+        } catch (e: Exception) {
+            logger.error("Failed to send push notification: ${e.message}", e)
+        }
     }
 }

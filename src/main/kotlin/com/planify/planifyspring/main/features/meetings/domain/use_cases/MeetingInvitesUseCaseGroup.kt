@@ -1,5 +1,6 @@
 package com.planify.planifyspring.main.features.meetings.domain.use_cases
 
+import com.planify.planifyspring.main.features.meetings.domain.entities.Meeting
 import com.planify.planifyspring.main.features.meetings.domain.entities.MeetingInvite
 import java.time.Instant
 
@@ -19,4 +20,6 @@ interface MeetingInvitesUseCaseGroup {
     fun requestRescheduleInvite(inviteUuid: String, rescheduleTo: Instant, requesterId: Long)
 
     fun responseRescheduleInvite(inviteUuid: String, shouldReschedule: Boolean, requesterId: Long)
+
+    fun getMeetingById(meetingId: Long): Meeting?
 }

@@ -31,7 +31,8 @@ class ApplicationSecurityConfig(
                     "/auth/**",
                     "/meetings/**",
                     "/profiles/**",
-                    "/chat/**"
+                    "/chat/**",
+                    "/ws/**"
                 )
             }
             .headers { headers ->

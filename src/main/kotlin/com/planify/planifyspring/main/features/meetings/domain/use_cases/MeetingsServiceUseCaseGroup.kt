@@ -39,6 +39,12 @@ interface MeetingsServiceUseCaseGroup {
         endAt: Instant
     ): Map<Instant, Long>
 
+    fun getUserCreatedMeetingsWithParticipantIds(
+        userId: Long,
+        startAt: Instant,
+        endAt: Instant
+    ): Map<Instant, List<MeetingWithParticipantIds>>
+
     fun createMeetingParticipant(
         meetingId: Long,
         userId: Long
@@ -59,4 +65,9 @@ interface MeetingsServiceUseCaseGroup {
         meetingId: Long,
         requesterId: Long
     ): MeetingWithParticipantIds
+
+    fun deleteMeeting(
+        meetingId: Long,
+        requesterId: Long
+    )
 }

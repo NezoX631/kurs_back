@@ -12,9 +12,11 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+
+data class FcmTokenRequest(
+    val fcmToken: String
+)
 
 @RestController
 @RequestMapping("/users")
@@ -30,6 +32,15 @@ class UsersFeatureController(
                 user = UserPrivateDTO.fromEntity(user = authContext.user)
             ).asSuccessApplicationResponse()
         )
+    }
+
+    @PostMapping("/fcm-token")
+    fun saveFcmToken(
+        @AuthenticationPrincipal authContext: AuthContext,
+        @RequestBody request: FcmTokenRequest
+    ): ResponseEntity<ApplicationResponse<Nothing>> {
+        authUseCaseGroup.saveFcmToken(authContext.user.id, request.fcmToken)
+        return ResponseEntity.ok(ApplicationResponse.success())
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasAuthority('READ_ANY_USER')")

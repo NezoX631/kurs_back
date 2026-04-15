@@ -118,4 +118,26 @@ class MeetingsServiceUseCaseGroupImpl(
     ): Map<Instant, Long> {
         return meetingsService.getUserDailyMeetingsShort(userId, startAt, endAt)
     }
+
+    override fun getUserCreatedMeetingsWithParticipantIds(
+        userId: Long,
+        startAt: Instant,
+        endAt: Instant
+    ): Map<Instant, List<MeetingWithParticipantIds>> {
+        return meetingsService.getUserCreatedMeetingsWithParticipantIds(userId, startAt, endAt)
+    }
+
+    @Transactional
+    override fun deleteMeeting(meetingId: Long, requesterId: Long) {
+        val meeting: Meeting
+        try {
+            meeting = meetingsService.getMeetingById(meetingId)
+        } catch (_: NotFoundAppError) {
+            throw NotFoundHttpException("Cannot delete meeting: Meeting was not found")
+        }
+
+        if (meeting.ownerId != requesterId) throw ForbiddenHttpException("Cannot delete meeting: you are not the owner")
+
+        meetingsService.deleteMeeting(meetingId)
+    }
 }

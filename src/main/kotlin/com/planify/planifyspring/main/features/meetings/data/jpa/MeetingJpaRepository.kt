@@ -11,7 +11,7 @@ interface MeetingJpaRepository : JpaRepository<MeetingModel, Long> {
     @Query(
         """
             UPDATE MeetingModel m
-            SET 
+            SET
                 m.name = COALESCE(:name, m.name),
                 m.startsAt = COALESCE(:startsAt, m.startsAt),
                 m.duration = COALESCE(:duration, m.duration),
@@ -28,4 +28,6 @@ interface MeetingJpaRepository : JpaRepository<MeetingModel, Long> {
         description: String?,
         location: String?
     )
+
+    fun findByOwnerIdAndStartsAtBetween(ownerId: Long, startAt: Instant, endAt: Instant): List<MeetingModel>
 }
