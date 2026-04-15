@@ -40,3 +40,5 @@ out/
 
 ### Kotlin ###
 secrets/
+src/main/resources/*.json
+src/main/resources/planify-*.json
