@@ -1,6 +1,3 @@
-## Team Trinity
-Original repo: https://github.com/DmitryUniversall/PlanifyBackend
-
 # Техническое задание на разработку программного продукта для планирования встреч
 
 ## 1. Общие описание
